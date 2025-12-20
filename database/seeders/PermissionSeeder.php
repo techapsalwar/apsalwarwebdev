@@ -30,6 +30,7 @@ class PermissionSeeder extends Seeder
         'alumni' => 'Manage alumni records',
         'fee_structures' => 'Manage fee structures',
         'tc_records' => 'Manage transfer certificates',
+        'mandatory_disclosures' => 'Manage mandatory disclosures',
         'albums' => 'Manage photo albums and galleries',
         'documents' => 'Manage downloadable documents',
         'contacts' => 'Manage contact form submissions',
@@ -55,7 +56,7 @@ class PermissionSeeder extends Seeder
                 'dashboard', 'sliders', 'quick_links', 'affirmations',
                 'news', 'events', 'announcements', 'departments', 'staff',
                 'board_results', 'achievements', 'houses', 'clubs', 'alumni',
-                'fee_structures', 'tc_records', 'albums', 'documents',
+                'fee_structures', 'tc_records', 'mandatory_disclosures', 'albums', 'documents',
                 'contacts', 'testimonials', 'partnerships', 'settings',
                 'facilities', 'committees',
             ],
@@ -77,7 +78,7 @@ class PermissionSeeder extends Seeder
         'admission_admin' => [
             'description' => 'Admission and TC management',
             'permissions' => [
-                'dashboard', 'fee_structures', 'tc_records', 'alumni', 'contacts',
+                'dashboard', 'fee_structures', 'tc_records', 'mandatory_disclosures', 'alumni', 'contacts',
             ],
         ],
         'viewer' => [

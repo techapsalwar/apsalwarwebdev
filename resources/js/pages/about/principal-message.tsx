@@ -126,7 +126,7 @@ export default function PrincipalMessage({ principal }: Props) {
                             <div className="lg:col-span-2">
                                 <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border p-8 lg:p-12">
                                     {/* Quote Icon */}
-                                    <Quote className="h-12 w-12 text-amber-200 dark:text-amber-800 mb-6" />
+                                    <Quote className="h-12 w-12 text-amber-200 dark:text-amber-800 mb-6 scale-x-[-1]" />
                                     
                                     {/* Message */}
                                     <div className="prose prose-lg dark:prose-invert max-w-none">

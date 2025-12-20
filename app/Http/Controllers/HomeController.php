@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Achievement;
 use App\Models\Affirmation;
 use App\Models\Committee;
+use App\Models\MandatoryDisclosure;
 use App\Models\Partnership;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -30,6 +31,7 @@ class HomeController extends Controller
             'todaysThought' => $this->getTodaysThought(),
             'partnerships' => $this->getPartnerships(),
             'management' => $this->getManagementHighlights(),
+            'mandatoryDisclosures' => $this->getMandatoryDisclosures(),
         ]);
     }
 
@@ -523,5 +525,22 @@ class HomeController extends Controller
                 'photo' => $m->photo ? "/storage/{$m->photo}" : null,
             ])->toArray(),
         ];
+    }
+
+    /**
+     * Get mandatory disclosures for CBSE compliance.
+     */
+    private function getMandatoryDisclosures(): array
+    {
+        return MandatoryDisclosure::active()
+            ->ordered()
+            ->get()
+            ->map(fn($disclosure) => [
+                'id' => $disclosure->id,
+                'title' => $disclosure->title,
+                'category' => $disclosure->category,
+                'file_url' => "/storage/{$disclosure->file_path}",
+            ])
+            ->toArray();
     }
 }

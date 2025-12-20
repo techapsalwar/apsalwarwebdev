@@ -32,6 +32,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import ThemeToggle from '@/components/theme-toggle';
 
 // ─────────────────────────────────────────────────────────────
 // Types
@@ -441,7 +442,7 @@ export default function PublicHeader() {
                                 className="flex items-center gap-1.5 transition-colors hover:text-orange-100 hover:scale-105 active:scale-95"
                             >
                                 <Phone className="h-3 w-3" />
-                                <span>+91-144-275-0001</span>
+                                <span>0144-2980050</span>
                             </a>
                             <span className="hidden h-3 w-px bg-white/30 sm:block" />
                             <a
@@ -449,7 +450,7 @@ export default function PublicHeader() {
                                 className="hidden items-center gap-1.5 transition-colors hover:text-orange-100 hover:scale-105 active:scale-95 sm:flex"
                             >
                                 <Mail className="h-3 w-3" />
-                                <span>info@apsalwar.edu.in</span>
+                                <span>inquiry@apsalwar.edu.in</span>
                             </a>
                         </div>
 
@@ -620,6 +621,9 @@ export default function PublicHeader() {
 
                             {/* CTA Buttons */}
                             <div className="hidden items-center gap-2 lg:flex">
+                                {/* Theme Toggle */}
+                                <ThemeToggle />
+
                                 <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                                     <Button
                                         variant="outline"
@@ -828,6 +832,11 @@ export default function PublicHeader() {
 
                         {/* Mobile CTA */}
                         <div className="border-t border-slate-200 p-4 dark:border-slate-800">
+                            {/* Theme Toggle for Mobile */}
+                            <div className="flex items-center justify-between mb-4 pb-4 border-b border-slate-100 dark:border-slate-800">
+                                <span className="text-sm font-medium text-slate-600 dark:text-slate-400">Theme</span>
+                                <ThemeToggle />
+                            </div>
                             <div className="flex flex-col gap-3">
                                 <Button variant="outline" className="w-full justify-center gap-2" asChild>
                                     <Link href="/alumni" onClick={() => setMobileMenuOpen(false)}>

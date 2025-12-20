@@ -30,6 +30,9 @@ import {
     Target,
     Heart,
     Award,
+    FileText,
+    X,
+    Download,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -190,6 +193,13 @@ interface Partnership {
     type_color: string;
 }
 
+interface MandatoryDisclosure {
+    id: number;
+    title: string;
+    category: string | null;
+    file_url: string;
+}
+
 interface HomeProps {
     sliders: Slider[];
     statistics: Statistic[];
@@ -201,6 +211,7 @@ interface HomeProps {
     principalMessage: PrincipalMessage;
     todaysThought: TodaysThought | null;
     partnerships: Partnership[];
+    mandatoryDisclosures: MandatoryDisclosure[];
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -573,7 +584,7 @@ const TestimonialCard = memo(function TestimonialCard({ testimonial }: { testimo
                             <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" />
                         ))}
                     </div>
-                    <Quote className="h-8 w-8 mb-4 text-amber-200/50" />
+                    <Quote className="h-8 w-8 mb-4 text-amber-200/50 scale-x-[-1]" />
                     <p className="mb-6 text-lg leading-relaxed text-white/90">"{testimonial.content}"</p>
                     <div className="flex items-center gap-4">
                         <div className="h-12 w-12 rounded-full bg-gradient-to-br from-amber-200 to-orange-300 overflow-hidden ring-2 ring-white/20">
@@ -598,6 +609,131 @@ const TestimonialCard = memo(function TestimonialCard({ testimonial }: { testimo
 
 
 // ─────────────────────────────────────────────────────────────
+// Mandatory Disclosures Floating Panel
+// ─────────────────────────────────────────────────────────────
+const MandatoryDisclosuresPanel = memo(function MandatoryDisclosuresPanel({ 
+    disclosures 
+}: { 
+    disclosures: MandatoryDisclosure[] 
+}) {
+    const [isOpen, setIsOpen] = useState(false);
+    const [isHovered, setIsHovered] = useState(false);
+
+    return (
+        <>
+            {/* Floating Button - Subtle on PC (partially hidden), Icon only on mobile */}
+            <motion.button
+                className="fixed right-0 top-2/5 -translate-y-1/2 z-40  bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-l-lg shadow-lg hover:shadow-xl px-2 py-6 md:px-2 md:py-2 flex items-center gap-2 cursor-pointer"
+                style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}
+                onClick={() => setIsOpen(true)}
+                onMouseEnter={() => setIsHovered(true)}
+                onMouseLeave={() => setIsHovered(false)}
+                animate={{ 
+                    x: isHovered ? (typeof window !== 'undefined' && window.innerWidth >= 768 ? 'calc(100% - 40px)' : 0) : 0
+                }}
+                transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                whileTap={{ scale: 0.95 }}
+                aria-label="Open Mandatory Disclosures"
+            >
+                {/* Mobile: Icon only */}
+                <FileText className="h-5 w-5 md:hidden" />
+                {/* Desktop: Icon + Text */}
+                <span className="hidden md:flex items-center gap-2 text-sm font-medium tracking-wide">
+                    <FileText className="h-4 w-3 rotate-90" />
+                    Mandatory Disclosures
+                </span>
+            </motion.button>
+
+            {/* Slide-out Panel */}
+            <AnimatePresence>
+                {isOpen && (
+                    <>
+                        {/* Backdrop */}
+                        <motion.div
+                            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setIsOpen(false)}
+                        />
+
+                        {/* Panel */}
+                        <motion.div
+                            className="fixed right-0 top-0 h-full w-full max-w-md bg-white dark:bg-gray-900 shadow-2xl z-50 overflow-hidden"
+                            initial={{ x: '100%' }}
+                            animate={{ x: 0 }}
+                            exit={{ x: '100%' }}
+                            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+                        >
+                            {/* Header */}
+                            <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-4">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <FileText className="h-6 w-6" />
+                                        <div>
+                                            <h3 className="font-bold text-lg">Mandatory Disclosures</h3>
+                                            <p className="text-sm text-blue-100">CBSE Compliance Documents</p>
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={() => setIsOpen(false)}
+                                        className="p-2 hover:bg-white/20 rounded-full transition-colors"
+                                        aria-label="Close panel"
+                                    >
+                                        <X className="h-5 w-5" />
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Content */}
+                            <div className="overflow-y-auto h-[calc(100%-80px)] p-4">
+                                <div className="space-y-3">
+                                    {disclosures.map((disclosure, index) => (
+                                        <motion.a
+                                            key={disclosure.id}
+                                            href={disclosure.file_url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="flex items-center gap-4 p-4 rounded-lg bg-gray-50 dark:bg-gray-800 hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors group border border-gray-200 dark:border-gray-700"
+                                            initial={{ opacity: 0, x: 20 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            transition={{ delay: index * 0.05 }}
+                                        >
+                                            <div className="flex-shrink-0 h-10 w-10 rounded-lg bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                                                <FileText className="h-5 w-5 text-red-600 dark:text-red-400" />
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="font-medium text-gray-900 dark:text-white truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                                                    {disclosure.title}
+                                                </p>
+                                                {disclosure.category && (
+                                                    <p className="text-xs text-gray-500 dark:text-gray-400 capitalize mt-0.5">
+                                                        {disclosure.category.replace(/_/g, ' ')}
+                                                    </p>
+                                                )}
+                                            </div>
+                                            <Download className="h-4 w-4 text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors flex-shrink-0" />
+                                        </motion.a>
+                                    ))}
+                                </div>
+
+                                {/* Footer Info */}
+                                <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                                    <p className="text-sm text-blue-800 dark:text-blue-200">
+                                        <strong>Note:</strong> These documents are made available as per CBSE guidelines for mandatory public disclosure.
+                                    </p>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </>
+                )}
+            </AnimatePresence>
+        </>
+    );
+});
+
+
+// ─────────────────────────────────────────────────────────────
 // Main Component
 // ─────────────────────────────────────────────────────────────
 export default function Home() {
@@ -612,6 +748,7 @@ export default function Home() {
     const achievements = pageProps.achievements || [];
     const testimonials = pageProps.testimonials || [];
     const partnerships = pageProps.partnerships || [];
+    const mandatoryDisclosures = pageProps.mandatoryDisclosures || [];
     const principalMessage = pageProps.principalMessage || {
         name: 'Dr. Neera Pandey',
         qualification: 'M.A., M.Ed., PG (Yale)',
@@ -658,137 +795,130 @@ export default function Home() {
     return (
         <PublicLayout title="Home - Army Public School Alwar">
             {/* ═══════════════════════════════════════════════════════════
-                HERO SECTION - 85vh for maximum impact
+                HERO SECTION - Optimized for instant loading & smooth transitions
             ═══════════════════════════════════════════════════════════ */}
             <section className="relative h-[85vh] min-h-[500px] max-h-[900px] overflow-hidden bg-gray-900">
-                <AnimatePresence mode="wait">
+                {/* Preload all images in hidden layer for instant switching */}
+                <div className="hidden">
                     {sliders.map((slide, index) => (
-                        index === currentSlide && (
-                            <motion.div
-                                key={slide.id}
-                                className="absolute inset-0"
-                                initial={{ opacity: 0, scale: 1.1 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                exit={{ opacity: 0, scale: 0.95 }}
-                                transition={{ duration: 0.7, ease: 'easeOut' as const }}
-                            >
-                                {/* Background Image with Parallax */}
-                                <motion.div
-                                    className="absolute inset-0 bg-cover bg-center"
-                                    style={{ backgroundImage: `url(${resolveImageUrl(slide.image)})` }}
-                                    animate={{ scale: 1.05 }}
-                                    transition={{ duration: 5, ease: 'linear' as const }}
-                                />
-                                {/* Subtle vignette effect - keeps image vibrant */}
-                                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(0,0,0,0.3)_100%)]" />
-                                <div className="absolute inset-0 bg-gradient-to-t from-gray-900/60 via-transparent to-transparent" />
-
-                                {/* Content */}
-                                <div className="container relative mx-auto flex h-full items-center px-4 sm:px-6">
-                                    {/* Content Container */}
-                                    <motion.div
-                                        className="max-w-2xl"
-                                        initial={{ opacity: 0, y: 40, scale: 0.95 }}
-                                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                                        transition={{ delay: 0.1, duration: 0.6, ease: 'easeOut' as const }}
-                                    >
-                                        <motion.div
-                                            initial={{ opacity: 0, y: 20 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            transition={{ delay: 0.2, duration: 0.5 }}
-                                        >
-                                            <Badge className="mb-4 bg-amber-500/90 text-white shadow-[0_4px_14px_rgba(245,158,11,0.4)] hover:bg-amber-600 border-0">
-                                                {slide.subtitle}
-                                            </Badge>
-                                        </motion.div>
-                                        <motion.h1
-                                            className="mb-4 text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight text-white"
-                                            style={{
-                                                textShadow: '0 2px 4px rgba(0,0,0,0.3), 0 4px 12px rgba(0,0,0,0.2), 0 8px 24px rgba(0,0,0,0.15)'
-                                            }}
-                                            initial={{ opacity: 0, y: 30 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            transition={{ delay: 0.3, duration: 0.6 }}
-                                        >
-                                            {slide.title}
-                                        </motion.h1>
-                                        <motion.p
-                                            className="mb-8 text-base sm:text-lg text-white/95 max-w-xl font-medium"
-                                            style={{
-                                                textShadow: '0 1px 3px rgba(0,0,0,0.3), 0 2px 8px rgba(0,0,0,0.2)'
-                                            }}
-                                            initial={{ opacity: 0, y: 30 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            transition={{ delay: 0.4, duration: 0.6 }}
-                                        >
-                                            {slide.description}
-                                        </motion.p>
-                                        <motion.div
-                                            className="flex flex-wrap gap-3 sm:gap-4"
-                                            initial={{ opacity: 0, y: 30 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            transition={{ delay: 0.5, duration: 0.6 }}
-                                        >
-                                            <Button
-                                                size="lg"
-                                                className="h-12 sm:h-14 px-6 sm:px-8 text-base sm:text-lg bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 shadow-[0_4px_20px_rgba(245,158,11,0.4),0_8px_32px_rgba(249,115,22,0.3)] hover:shadow-[0_6px_24px_rgba(245,158,11,0.5),0_12px_40px_rgba(249,115,22,0.4)] transition-shadow border-0"
-                                                asChild
-                                            >
-                                                <Link href={slide.cta.href}>
-                                                    {slide.cta.text}
-                                                    <ArrowRight className="ml-2 h-5 w-5" />
-                                                </Link>
-                                            </Button>
-                                            <Button
-                                                size="lg"
-                                                variant="outline"
-                                                className="h-12 sm:h-14 px-6 sm:px-8 text-base sm:text-lg border-white/30 bg-white/10 text-white backdrop-blur-sm hover:bg-white/20 shadow-[0_4px_16px_rgba(0,0,0,0.2)]"
-                                            >
-                                                <Play className="mr-2 h-5 w-5" />
-                                                Watch Video
-                                            </Button>
-                                        </motion.div>
-                                    </motion.div>
-                                </div>
-                            </motion.div>
-                        )
+                        <img 
+                            key={`preload-${slide.id}`}
+                            src={resolveImageUrl(slide.image)} 
+                            alt="" 
+                            loading={index === 0 ? "eager" : "lazy"}
+                        />
                     ))}
-                </AnimatePresence>
+                </div>
+
+                {/* All slides rendered simultaneously - only opacity changes */}
+                {sliders.map((slide, index) => (
+                    <div
+                        key={slide.id}
+                        className={cn(
+                            "absolute inset-0 transition-opacity duration-700 ease-in-out",
+                            index === currentSlide ? "opacity-100 z-10" : "opacity-0 z-0"
+                        )}
+                    >
+                        {/* Background Image - CSS only, no motion for performance */}
+                        <div 
+                            className={cn(
+                                "absolute inset-0 bg-cover bg-center transition-transform duration-[5000ms] ease-linear",
+                                index === currentSlide ? "scale-105" : "scale-100"
+                            )}
+                            style={{ backgroundImage: `url(${resolveImageUrl(slide.image)})` }}
+                        />
+                        
+                        {/* Overlays */}
+                        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(0,0,0,0.3)_100%)]" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-gray-900/60 via-transparent to-transparent" />
+
+                        {/* Content - Only animate when active */}
+                        <div className="container relative mx-auto flex h-full items-center px-4 sm:px-6">
+                            <div 
+                                className={cn(
+                                    "max-w-2xl transition-all duration-500 ease-out",
+                                    index === currentSlide 
+                                        ? "opacity-100 translate-y-0" 
+                                        : "opacity-0 translate-y-8"
+                                )}
+                                style={{ transitionDelay: index === currentSlide ? '200ms' : '0ms' }}
+                            >
+                                <Badge className="mb-4 bg-amber-500/90 text-white shadow-[0_4px_14px_rgba(245,158,11,0.4)] hover:bg-amber-600 border-0">
+                                    {slide.subtitle}
+                                </Badge>
+                                <h1
+                                    className="mb-4 text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight text-white"
+                                    style={{
+                                        textShadow: '0 2px 4px rgba(0,0,0,0.3), 0 4px 12px rgba(0,0,0,0.2), 0 8px 24px rgba(0,0,0,0.15)'
+                                    }}
+                                >
+                                    {slide.title}
+                                </h1>
+                                <p
+                                    className="mb-8 text-base sm:text-lg text-white/95 max-w-xl font-medium"
+                                    style={{
+                                        textShadow: '0 1px 3px rgba(0,0,0,0.3), 0 2px 8px rgba(0,0,0,0.2)'
+                                    }}
+                                >
+                                    {slide.description}
+                                </p>
+                                <div className="flex flex-wrap gap-3 sm:gap-4">
+                                    <Button
+                                        size="lg"
+                                        className="h-12 sm:h-14 px-6 sm:px-8 text-base sm:text-lg bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 shadow-[0_4px_20px_rgba(245,158,11,0.4),0_8px_32px_rgba(249,115,22,0.3)] hover:shadow-[0_6px_24px_rgba(245,158,11,0.5),0_12px_40px_rgba(249,115,22,0.4)] transition-shadow border-0"
+                                        asChild
+                                    >
+                                        <Link href={slide.cta.href}>
+                                            {slide.cta.text}
+                                            <ArrowRight className="ml-2 h-5 w-5" />
+                                        </Link>
+                                    </Button>
+                                    <Button
+                                        size="lg"
+                                        variant="outline"
+                                        className="h-12 sm:h-14 px-6 sm:px-8 text-base sm:text-lg border-white/30 bg-white/10 text-white backdrop-blur-sm hover:bg-white/20 shadow-[0_4px_16px_rgba(0,0,0,0.2)]"
+                                    >
+                                        <Play className="mr-2 h-5 w-5" />
+                                        Watch Video
+                                    </Button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                ))}
 
                 {/* Slider Controls */}
-                <motion.button
+                <button
                     onClick={prevSlide}
-                    className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 rounded-full bg-white/10 p-2 sm:p-3 text-white backdrop-blur-md hover:bg-white/20 transition-all border border-white/10"
-                    whileHover={{ scale: 1.1, x: -2 }}
-                    whileTap={{ scale: 0.95 }}
+                    className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-20 rounded-full bg-white/10 p-2 sm:p-3 text-white backdrop-blur-md hover:bg-white/20 hover:scale-110 active:scale-95 transition-all border border-white/10"
                     aria-label="Previous slide"
                 >
                     <ChevronLeft className="h-5 w-5 sm:h-6 sm:w-6" />
-                </motion.button>
-                <motion.button
+                </button>
+                <button
                     onClick={nextSlide}
-                    className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 rounded-full bg-white/10 p-2 sm:p-3 text-white backdrop-blur-md hover:bg-white/20 transition-all border border-white/10"
-                    whileHover={{ scale: 1.1, x: 2 }}
-                    whileTap={{ scale: 0.95 }}
+                    className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-20 rounded-full bg-white/10 p-2 sm:p-3 text-white backdrop-blur-md hover:bg-white/20 hover:scale-110 active:scale-95 transition-all border border-white/10"
                     aria-label="Next slide"
                 >
                     <ChevronRight className="h-5 w-5 sm:h-6 sm:w-6" />
-                </motion.button>
+                </button>
 
                 {/* Progress Indicators */}
-                <div className="absolute bottom-6 left-1/2 flex -translate-x-1/2 gap-2">
+                <div className="absolute bottom-6 left-1/2 flex -translate-x-1/2 gap-2 z-20">
                     {sliders.map((_, index) => (
                         <button
                             key={index}
                             onClick={() => goToSlide(index)}
-                            className="relative h-1.5 overflow-hidden rounded-full transition-all"
-                            style={{ width: index === currentSlide ? 48 : 12 }}
+                            className={cn(
+                                "relative h-1.5 overflow-hidden rounded-full transition-all duration-300",
+                                index === currentSlide ? "w-12" : "w-3"
+                            )}
                             aria-label={`Go to slide ${index + 1}`}
                         >
                             <div className="absolute inset-0 bg-white/30" />
                             {index === currentSlide && (
-                                <motion.div
-                                    className="absolute inset-y-0 left-0 bg-amber-500"
+                                <div 
+                                    className="absolute inset-y-0 left-0 bg-amber-500 transition-none"
                                     style={{ width: `${slideProgress}%` }}
                                 />
                             )}
@@ -903,7 +1033,7 @@ export default function Home() {
 
                             <div className="flex-1 text-center md:text-left">
                                 <blockquote className="relative">
-                                    <Quote className="absolute -left-2 -top-2 h-6 w-6 text-amber-300/50 dark:text-amber-700/50" />
+                                    <Quote className="absolute -left-2 -top-2 h-6 w-6 text-amber-300/50 dark:text-amber-700/50 scale-x-[-1]" />
                                     <p className="pl-6 text-lg font-medium italic text-gray-800 dark:text-gray-200 md:pl-4">
                                         {todaysThought.quote}
                                     </p>
@@ -941,7 +1071,7 @@ export default function Home() {
                                 Principal's Message
                             </h2>
                             <div className="relative mb-6">
-                                <Quote className="absolute -left-2 -top-2 h-10 w-10 text-amber-200 dark:text-amber-800" />
+                                <Quote className="absolute -left-2 -top-2 h-10 w-10 text-amber-200 dark:text-amber-800 scale-x-[-1]" />
                                 <p className="pl-8 text-base leading-relaxed text-gray-600 dark:text-gray-300 sm:text-lg">
                                     {principalMessage.message}
                                 </p>
@@ -1342,6 +1472,11 @@ export default function Home() {
                     </motion.div>
                 </div>
             </section>
+
+            {/* Floating Mandatory Disclosures Panel */}
+            {mandatoryDisclosures.length > 0 && (
+                <MandatoryDisclosuresPanel disclosures={mandatoryDisclosures} />
+            )}
         </PublicLayout>
     );
 }

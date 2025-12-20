@@ -167,6 +167,12 @@ const admissionNavItems: PermissionedNavItem[] = [
         icon: FileCheck,
         permission: 'tc_records',
     },
+    {
+        title: 'Mandatory Disclosures',
+        href: '/admin/mandatory-disclosures',
+        icon: FileText,
+        permission: 'mandatory_disclosures',
+    },
 ];
 
 // Media Navigation

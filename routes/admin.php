@@ -16,6 +16,7 @@ use App\Http\Controllers\Admin\EventController;
 use App\Http\Controllers\Admin\FacilityController;
 use App\Http\Controllers\Admin\FeeStructureController;
 use App\Http\Controllers\Admin\HouseController;
+use App\Http\Controllers\Admin\MandatoryDisclosureController;
 use App\Http\Controllers\Admin\NewsController;
 use App\Http\Controllers\Admin\PartnershipController;
 use App\Http\Controllers\Admin\QuickLinkController;
@@ -300,6 +301,17 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
             ->name('tc-records.toggle-verified');
         Route::get('tc-records/{tc_record}/download', [TcRecordController::class, 'download'])
             ->name('tc-records.download');
+    });
+
+    // Mandatory Disclosures Management
+    Route::middleware('permission:mandatory_disclosures')->group(function () {
+        Route::resource('mandatory-disclosures', MandatoryDisclosureController::class)->except(['show']);
+        Route::post('mandatory-disclosures/{mandatory_disclosure}/toggle-active', [MandatoryDisclosureController::class, 'toggleActive'])
+            ->name('mandatory-disclosures.toggle-active');
+        Route::post('mandatory-disclosures/reorder', [MandatoryDisclosureController::class, 'reorder'])
+            ->name('mandatory-disclosures.reorder');
+        Route::get('mandatory-disclosures/{mandatory_disclosure}/download', [MandatoryDisclosureController::class, 'download'])
+            ->name('mandatory-disclosures.download');
     });
 
     // Board Results Management
