@@ -84,17 +84,20 @@ In Plesk Git settings:
 
 ## Step 3: Add Post-Deployment Script
 
-### Option A: Use the included script (Recommended)
+### Option A: For Windows Server (Your Setup)
 
-In Plesk Git **"Additional deployment actions"** field, add:
+Since your Plesk runs on Windows, paste these commands (one per line):
 
-```bash
-bash /dev.apsalwar.edu.in/plesk-deploy.sh
+```
+php composer.phar install --no-dev --no-interaction --prefer-dist --optimize-autoloader
+php artisan migrate --force
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+php artisan storage:link
 ```
 
-The `plesk-deploy.sh` script is already included in this repository.
-
-### Option B: Inline commands
+### Option B: For Linux Server (bash script)
 
 If you prefer, paste these commands directly in Plesk:
 
