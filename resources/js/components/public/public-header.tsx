@@ -251,17 +251,14 @@ function MagneticLink({
 // ─────────────────────────────────────────────────────────────
 // Mega Menu Component
 // ─────────────────────────────────────────────────────────────
-function MegaMenu({ item, isOpen, onClose, scrolled }: { item: NavItem; isOpen: boolean; onClose: () => void; scrolled: boolean }) {
+function MegaMenu({ item, isOpen, onClose }: { item: NavItem; isOpen: boolean; onClose: () => void }) {
     if (!item.children) return null;
 
     return (
         <AnimatePresence>
             {isOpen && (
                 <motion.div
-                    className={cn(
-                        "fixed left-1/2 z-50 w-screen max-w-6xl -translate-x-1/2 px-4",
-                        scrolled ? "top-[76px]" : "top-[80px]"
-                    )}
+                    className="fixed left-1/2 z-50 w-screen max-w-6xl -translate-x-1/2 px-4 top-[76px]"
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
@@ -370,10 +367,10 @@ export default function PublicHeader() {
     const { url, props } = usePage();
     const sharedSocialLinks = (props as any)?.socialLinks;
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-    const [scrolled, setScrolled] = useState(false);
     const [activeMenu, setActiveMenu] = useState<string | null>(null);
     const [expandedMobileItem, setExpandedMobileItem] = useState<string | null>(null);
     const [topBarVisible, setTopBarVisible] = useState(true);
+    const [isMdScreen, setIsMdScreen] = useState(false);
     const lastScrollY = useRef(0);
 
     const socialLinks = sharedSocialLinks ? [
@@ -383,11 +380,20 @@ export default function PublicHeader() {
         { icon: Youtube, href: sharedSocialLinks.social_youtube, label: 'YouTube' },
     ].filter(link => link.href) : [];
 
-    // Track scroll for floating effect and top bar hide
+    // Track screen size for responsive navigation shift
+    useEffect(() => {
+        const mediaQuery = window.matchMedia('(min-width: 768px)');
+        setIsMdScreen(mediaQuery.matches);
+
+        const handleResize = (e: MediaQueryListEvent) => setIsMdScreen(e.matches);
+        mediaQuery.addEventListener('change', handleResize);
+        return () => mediaQuery.removeEventListener('change', handleResize);
+    }, []);
+
+    // Track scroll for top bar hide on scroll down
     useEffect(() => {
         const handleScroll = () => {
             const currentScrollY = window.scrollY;
-            setScrolled(currentScrollY > 20);
 
             // Hide top bar when scrolling down
             if (currentScrollY > lastScrollY.current && currentScrollY > 60) {
@@ -471,22 +477,15 @@ export default function PublicHeader() {
                     </div>
                 </motion.div>
 
-                {/* Main Navigation - Floating Pill on Scroll */}
+                {/* Main Navigation - Always Floating Pill */}
                 <motion.div
-                    className={cn(
-                        'transition-all duration-300',
-                        scrolled
-                            ? 'mx-4 mt-0 rounded-2xl border border-white/40 bg-white/80 shadow-2xl shadow-slate-900/10 backdrop-blur-2xl supports-[backdrop-filter]:bg-white/60 dark:border-slate-700/50 dark:bg-slate-950/80 dark:shadow-slate-950/50 dark:supports-[backdrop-filter]:bg-slate-950/60'
-                            : 'border-b border-slate-200/80 bg-white/95 backdrop-blur-sm dark:border-slate-800 dark:bg-slate-950/95'
-                    )}
-                    animate={{
-                        boxShadow: scrolled
-                            ? '0 20px 50px -12px rgba(0, 0, 0, 0.15)'
-                            : '0 0 0 0 rgba(0, 0, 0, 0)',
-                    }}
+                    className="mx-4 mt-2 rounded-2xl border border-white/40 bg-white/80 shadow-2xl shadow-slate-900/10 backdrop-blur-2xl supports-[backdrop-filter]:bg-white/60 dark:border-slate-700/50 dark:bg-slate-950/80 dark:shadow-slate-950/50 dark:supports-[backdrop-filter]:bg-slate-950/60"
+                    style={{ boxShadow: '0 20px 50px -12px rgba(0, 0, 0, 0.15)' }}
+                    animate={{ y: isMdScreen && !topBarVisible ? -40 : 0 }}
+                    transition={{ duration: 0.3 }}
                 >
-                    <div className={cn('container mx-auto px-4', scrolled && 'px-2')}>
-                        <div className={cn('flex items-center justify-between', scrolled ? 'h-16' : 'h-20')}>
+                    <div className="container mx-auto px-2">
+                        <div className="flex h-16 items-center justify-between">
                             {/* Logo */}
                             <Link href="/" className="group flex items-center gap-2 sm:gap-4">
                                 {/* Logo without background - larger and prominent */}
@@ -499,10 +498,7 @@ export default function PublicHeader() {
                                     <img
                                         src="/favicon/android-chrome-192x192.png"
                                         alt="Army Public School Alwar"
-                                        className={cn(
-                                            "object-contain drop-shadow-md transition-all duration-300",
-                                            scrolled ? "h-10 w-10 sm:h-12 sm:w-12" : "h-11 w-11 sm:h-14 sm:w-14"
-                                        )}
+                                        className="h-10 w-10 object-contain drop-shadow-md sm:h-12 sm:w-12"
                                     />
                                 </motion.div>
 
@@ -604,7 +600,6 @@ export default function PublicHeader() {
                                                 item={item}
                                                 isOpen={activeMenu === item.title}
                                                 onClose={() => setActiveMenu(null)}
-                                                scrolled={scrolled}
                                             />
                                         </div>
                                     ) : (
