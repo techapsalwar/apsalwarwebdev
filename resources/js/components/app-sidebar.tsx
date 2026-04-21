@@ -189,6 +189,12 @@ const mediaNavItems: PermissionedNavItem[] = [
         icon: Folder,
         permission: 'documents',
     },
+    {
+        title: 'E-Magazines',
+        href: '/admin/magazines',
+        icon: BookOpen,
+        permission: 'magazines',
+    },
 ];
 
 // Interactions Navigation

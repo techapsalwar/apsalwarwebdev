@@ -29,6 +29,7 @@ interface FeeItem {
     security_deposit: number;
     annual_fee: number;
     tuition_fee: number;
+    pupil_fee: number;
     computer_fee: number;
     science_fee: number;
     other_fees: Record<string, number> | null;
@@ -279,6 +280,10 @@ export default function FeeStructure({ feeStructures, feeTypes = [], academicYea
                                                                 <span className="block text-xs font-normal text-gray-500">/month</span>
                                                             </th>
                                                             <th className="px-4 py-3 text-right font-semibold text-gray-900 dark:text-white">
+                                                                Pupil Fee
+                                                                <span className="block text-xs font-normal text-gray-500">/month</span>
+                                                            </th>
+                                                            <th className="px-4 py-3 text-right font-semibold text-gray-900 dark:text-white">
                                                                 Computer Fee
                                                                 <span className="block text-xs font-normal text-gray-500">/month</span>
                                                             </th>
@@ -309,7 +314,7 @@ export default function FeeStructure({ feeStructures, feeTypes = [], academicYea
                                                                 return sum + toNumber(fee.other_fees?.[ft.key]);
                                                             }, 0);
                                                             
-                                                            const monthlyTotal = toNumber(fee.tuition_fee) + toNumber(fee.computer_fee) + toNumber(fee.science_fee) + customRecurringMonthly;
+                                                            const monthlyTotal = toNumber(fee.tuition_fee) + toNumber(fee.pupil_fee) + toNumber(fee.computer_fee) + toNumber(fee.science_fee) + customRecurringMonthly;
                                                             const annualTotal = (monthlyTotal * 12) + toNumber(fee.annual_fee);
                                                             
                                                             return (
@@ -319,6 +324,9 @@ export default function FeeStructure({ feeStructures, feeTypes = [], academicYea
                                                                     </td>
                                                                     <td className="px-4 py-3 text-right text-gray-700 dark:text-gray-300">
                                                                         {formatCurrency(fee.tuition_fee)}
+                                                                    </td>
+                                                                    <td className="px-4 py-3 text-right text-gray-700 dark:text-gray-300">
+                                                                        {formatCurrency(fee.pupil_fee)}
                                                                     </td>
                                                                     <td className="px-4 py-3 text-right text-gray-700 dark:text-gray-300">
                                                                         {formatCurrency(fee.computer_fee)}

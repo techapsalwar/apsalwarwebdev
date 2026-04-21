@@ -55,7 +55,7 @@ class AdmissionsController extends Controller
         // Get active fee structures grouped by category and class range
         $feeStructures = FeeStructure::where('is_active', true)
             ->orderByRaw("FIELD(category, 'officers', 'jco', 'or', 'civilian')")
-            ->orderByRaw("FIELD(class_range, 'nursery_ukg', 'i_v', 'vi_viii', 'ix_x', 'xi_xii')")
+            ->orderByRaw("FIELD(class_range, 'nursery_ukg', 'i_v', 'vi_viii', 'ix_x', 'xi_xii', 'xi_xii_hc')")
             ->get();
 
         // Get active custom fee types
@@ -75,6 +75,7 @@ class AdmissionsController extends Controller
                         'security_deposit' => $fee->security_deposit,
                         'annual_fee' => $fee->annual_fee,
                         'tuition_fee' => $fee->tuition_fee,
+                        'pupil_fee' => $fee->pupil_fee,
                         'computer_fee' => $fee->computer_fee,
                         'science_fee' => $fee->science_fee,
                         'other_fees' => $fee->other_fees,

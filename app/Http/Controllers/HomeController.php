@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Achievement;
 use App\Models\Affirmation;
 use App\Models\Committee;
+use App\Models\Magazine;
 use App\Models\MandatoryDisclosure;
 use App\Models\Partnership;
 use Illuminate\Support\Facades\DB;
@@ -32,6 +33,7 @@ class HomeController extends Controller
             'partnerships' => $this->getPartnerships(),
             'management' => $this->getManagementHighlights(),
             'mandatoryDisclosures' => $this->getMandatoryDisclosures(),
+            'featuredMagazine' => $this->getFeaturedMagazine(),
         ]);
     }
 
@@ -542,5 +544,30 @@ class HomeController extends Controller
                 'file_url' => "/storage/{$disclosure->file_path}",
             ])
             ->toArray();
+    }
+
+    /**
+     * Get the featured e-magazine for the floating FAB.
+     */
+    private function getFeaturedMagazine(): ?array
+    {
+        $magazine = Magazine::active()
+            ->featured()
+            ->orderBy('issue_date', 'desc')
+            ->first();
+
+        if (!$magazine) {
+            return null;
+        }
+
+        return [
+            'id' => $magazine->id,
+            'title' => $magazine->title,
+            'slug' => $magazine->slug,
+            'cover_url' => $magazine->cover_url,
+            'pdf_url' => $magazine->pdf_url,
+            'issue_date' => $magazine->issue_date->format('M Y'),
+            'issue_number' => $magazine->issue_number,
+        ];
     }
 }

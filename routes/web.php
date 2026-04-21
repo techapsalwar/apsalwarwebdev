@@ -14,6 +14,7 @@ use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\FacilitiesController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\EmagazineController;
 use App\Http\Controllers\NewsController;
 use App\Http\Controllers\TcVerificationController;
 use Illuminate\Support\Facades\Route;
@@ -113,6 +114,10 @@ Route::prefix('student-life')->group(function () {
     Route::redirect('/ncc', '/beyond-academics/ncc');
     Route::redirect('/sports', '/beyond-academics/sports');
 });
+
+// E-Magazines
+Route::get('/e-magazines', [EmagazineController::class, 'index'])->name('e-magazines.index');
+Route::get('/e-magazines/{magazine:slug}', [EmagazineController::class, 'show'])->name('e-magazines.show');
 
 // Alumni Pages
 Route::prefix('alumni')->group(function () {

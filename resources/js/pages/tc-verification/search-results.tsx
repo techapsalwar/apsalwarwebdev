@@ -9,15 +9,24 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { useState, useEffect, useRef } from 'react';
 
-interface GrecaptchaV2 {
-    render: (container: HTMLElement | string, parameters: {
-        sitekey: string;
-        callback: (token: string) => void;
-        'expired-callback'?: () => void;
-        'error-callback'?: () => void;
-    }) => number;
-    reset: (widgetId?: number) => void;
-    getResponse: (widgetId?: number) => string;
+declare global {
+    interface Window {
+        grecaptcha: {
+            enterprise: {
+                render: (container: HTMLElement | string, parameters: {
+                    sitekey: string;
+                    action?: string;
+                    callback: (token: string) => void;
+                    'expired-callback'?: () => void;
+                    'error-callback'?: () => void;
+                }) => number;
+                reset: (widgetId?: number) => void;
+                getResponse: (widgetId?: number) => string;
+                ready: (callback: () => void) => void;
+            };
+        };
+        onRecaptchaEnterpriseLoad?: () => void;
+    }
 }
 
 interface TcRecord {
@@ -54,49 +63,75 @@ export default function TcSearchResults({ records, searchQuery, recaptchaSiteKey
             return;
         }
 
-        // Load reCAPTCHA script if not already loaded
-        if (!document.querySelector('script[src*="recaptcha/api.js"]')) {
-            (window as unknown as { onRecaptchaVerifyLoad?: () => void }).onRecaptchaVerifyLoad = () => setRecaptchaLoaded(true);
+        // Load reCAPTCHA Enterprise script if not already loaded
+        if (!document.querySelector('script[src*="recaptcha/enterprise.js"]')) {
+            window.onRecaptchaEnterpriseLoad = () => {
+                setRecaptchaLoaded(true);
+            };
             const script = document.createElement('script');
-            script.src = 'https://www.google.com/recaptcha/api.js?onload=onRecaptchaVerifyLoad&render=explicit';
+            script.src = 'https://www.google.com/recaptcha/enterprise.js?onload=onRecaptchaEnterpriseLoad&render=explicit';
             script.async = true;
             script.defer = true;
             document.head.appendChild(script);
         } else {
-            setRecaptchaLoaded(true);
+            // Check if grecaptcha is ready
+            if (window.grecaptcha?.enterprise) {
+                setRecaptchaLoaded(true);
+            } else {
+                // Wait for it to be ready
+                const checkReady = setInterval(() => {
+                    if (window.grecaptcha?.enterprise) {
+                        clearInterval(checkReady);
+                        setRecaptchaLoaded(true);
+                    }
+                }, 100);
+            }
         }
 
         return () => {
-            (window as unknown as { onRecaptchaVerifyLoad?: () => void }).onRecaptchaVerifyLoad = undefined;
+            window.onRecaptchaEnterpriseLoad = undefined;
         };
     }, [recaptchaSiteKey]);
 
-    // Render reCAPTCHA when dialog opens
+    // Render reCAPTCHA Enterprise when dialog opens
     useEffect(() => {
-        const grecaptcha = (window as unknown as { grecaptcha?: GrecaptchaV2 }).grecaptcha;
-        if (selectedRecord && recaptchaLoaded && recaptchaSiteKey && recaptchaRef.current && grecaptcha) {
-            // Small delay to ensure DOM is ready
-            const timer = setTimeout(() => {
-                if (recaptchaRef.current && widgetIdRef.current === null) {
-                    try {
-                        widgetIdRef.current = grecaptcha.render(recaptchaRef.current, {
-                            sitekey: recaptchaSiteKey,
-                            callback: (token: string) => {
-                                setRecaptchaToken(token);
-                                setError('');
-                            },
-                            'expired-callback': () => {
-                                setRecaptchaToken('');
-                                setError('reCAPTCHA expired. Please verify again.');
-                            },
-                        });
-                    } catch (e) {
-                        console.error('reCAPTCHA render error:', e);
-                    }
-                }
-            }, 100);
-            return () => clearTimeout(timer);
+        if (!selectedRecord || !recaptchaSiteKey || !recaptchaRef.current) {
+            return;
         }
+
+        if (widgetIdRef.current !== null) {
+            return;
+        }
+
+        const renderWidget = () => {
+            if (!recaptchaRef.current) return;
+            
+            if (window.grecaptcha?.enterprise) {
+                try {
+                    widgetIdRef.current = window.grecaptcha.enterprise.render(recaptchaRef.current, {
+                        sitekey: recaptchaSiteKey,
+                        callback: (token: string) => {
+                            setRecaptchaToken(token);
+                            setError('');
+                        },
+                        'expired-callback': () => {
+                            setRecaptchaToken('');
+                            setError('reCAPTCHA expired. Please verify again.');
+                        },
+                        'error-callback': () => {
+                            setError('reCAPTCHA error. Please refresh and try again.');
+                        },
+                    });
+                } catch (e) {
+                    // Widget may already be rendered
+                }
+            } else {
+                setTimeout(renderWidget, 200);
+            }
+        };
+        
+        const timer = setTimeout(renderWidget, 100);
+        return () => clearTimeout(timer);
     }, [selectedRecord, recaptchaLoaded, recaptchaSiteKey]);
 
     const handleVerify = async (e: React.FormEvent) => {
@@ -131,10 +166,9 @@ export default function TcSearchResults({ records, searchQuery, recaptchaSiteKey
                 setDownloadUrl(data.download_url);
             } else {
                 setError(data.message || 'Verification failed. Please try again.');
-                // Reset reCAPTCHA on error
-                const grecaptcha = (window as unknown as { grecaptcha?: GrecaptchaV2 }).grecaptcha;
-                if (grecaptcha && widgetIdRef.current !== null) {
-                    grecaptcha.reset(widgetIdRef.current);
+                // Reset reCAPTCHA Enterprise on error
+                if (window.grecaptcha?.enterprise && widgetIdRef.current !== null) {
+                    window.grecaptcha.enterprise.reset(widgetIdRef.current);
                     setRecaptchaToken('');
                 }
             }

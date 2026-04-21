@@ -114,26 +114,39 @@ class TcVerificationController extends Controller
     }
 
     /**
-     * Verify Google reCAPTCHA token.
+     * Verify Google reCAPTCHA Enterprise token.
      */
     private function verifyRecaptcha(string $token): bool
     {
-        $secretKey = config('services.recaptcha.secret_key');
+        $siteKey = config('services.recaptcha.site_key');
+        $projectId = config('services.recaptcha.project_id');
 
-        if (!$secretKey) {
+        if (!$siteKey || !$projectId) {
             // If reCAPTCHA is not configured, skip verification in development
             return app()->environment('local', 'development');
         }
 
-        $response = Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
-            'secret' => $secretKey,
-            'response' => $token,
-            'remoteip' => request()->ip(),
+        // reCAPTCHA Enterprise uses Google Cloud API
+        $response = Http::withHeaders([
+            'Content-Type' => 'application/json',
+        ])->post("https://recaptchaenterprise.googleapis.com/v1/projects/{$projectId}/assessments?key=" . config('services.recaptcha.api_key'), [
+            'event' => [
+                'token' => $token,
+                'siteKey' => $siteKey,
+                'expectedAction' => 'TC_DOWNLOAD',
+            ],
         ]);
 
         $data = $response->json();
 
-        return $data['success'] ?? false;
+        // Check if token is valid
+        if (!($data['tokenProperties']['valid'] ?? false)) {
+            return false;
+        }
+
+        // Check risk score (0.0 = bot, 1.0 = human) - accept scores >= 0.5
+        $score = $data['riskAnalysis']['score'] ?? 0;
+        return $score >= 0.5;
     }
 
     /**

@@ -38,6 +38,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import MagazineFab from '@/components/public/magazine-fab';
 
 // ─────────────────────────────────────────────────────────────
 // Animation Variants (Optimized - reduced complexity)
@@ -212,6 +213,15 @@ interface HomeProps {
     todaysThought: TodaysThought | null;
     partnerships: Partnership[];
     mandatoryDisclosures: MandatoryDisclosure[];
+    featuredMagazine: {
+        id: number;
+        title: string;
+        slug: string;
+        cover_url: string | null;
+        pdf_url: string;
+        issue_date: string;
+        issue_number: string | null;
+    } | null;
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -749,6 +759,7 @@ export default function Home() {
     const testimonials = pageProps.testimonials || [];
     const partnerships = pageProps.partnerships || [];
     const mandatoryDisclosures = pageProps.mandatoryDisclosures || [];
+    const featuredMagazine = pageProps.featuredMagazine || null;
     const principalMessage = pageProps.principalMessage || {
         name: 'Dr. Neera Pandey',
         qualification: 'M.A., M.Ed., PG (Yale)',
@@ -1476,6 +1487,11 @@ export default function Home() {
             {/* Floating Mandatory Disclosures Panel */}
             {mandatoryDisclosures.length > 0 && (
                 <MandatoryDisclosuresPanel disclosures={mandatoryDisclosures} />
+            )}
+
+            {/* Floating E-Magazine FAB */}
+            {featuredMagazine && (
+                <MagazineFab magazine={featuredMagazine} />
             )}
         </PublicLayout>
     );

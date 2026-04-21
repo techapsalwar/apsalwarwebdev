@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\ContactController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DepartmentController;
 use App\Http\Controllers\Admin\DocumentController;
+use App\Http\Controllers\Admin\MagazineController;
 use App\Http\Controllers\Admin\EventController;
 use App\Http\Controllers\Admin\FacilityController;
 use App\Http\Controllers\Admin\FeeStructureController;
@@ -189,6 +190,15 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
             ->name('documents.toggle-active');
         Route::get('documents/{document}/download', [DocumentController::class, 'download'])
             ->name('documents.download');
+    });
+
+    // E-Magazines Management
+    Route::middleware('permission:magazines')->group(function () {
+        Route::resource('magazines', MagazineController::class)->except(['show']);
+        Route::post('magazines/{magazine}/toggle-active', [MagazineController::class, 'toggleActive'])
+            ->name('magazines.toggle-active');
+        Route::post('magazines/{magazine}/set-featured', [MagazineController::class, 'setFeatured'])
+            ->name('magazines.set-featured');
     });
 
     // Contacts Management

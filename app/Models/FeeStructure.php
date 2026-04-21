@@ -15,6 +15,7 @@ class FeeStructure extends Model
         'security_deposit',
         'annual_fee',
         'tuition_fee',
+        'pupil_fee',
         'computer_fee',
         'science_fee',
         'other_fees',
@@ -29,6 +30,7 @@ class FeeStructure extends Model
         'security_deposit' => 'decimal:2',
         'annual_fee' => 'decimal:2',
         'tuition_fee' => 'decimal:2',
+        'pupil_fee' => 'decimal:2',
         'computer_fee' => 'decimal:2',
         'science_fee' => 'decimal:2',
         'other_fees' => 'array',
@@ -49,7 +51,8 @@ class FeeStructure extends Model
         'i_v' => 'Class I to V',
         'vi_viii' => 'Class VI to VIII',
         'ix_x' => 'Class IX to X',
-        'xi_xii' => 'Class XI to XII',
+        'xi_xii' => 'Class XI to XII (Science)',
+        'xi_xii_hc' => 'Class XI to XII (Humanities & Commerce)',
     ];
 
     public function scopeActive($query)
