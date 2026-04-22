@@ -12,32 +12,43 @@ class ClearLegacyCookieDomain
     {
         $response = $next($request);
 
-        $legacyDomain = $this->legacyDomain($request);
+        $domains = $this->domainsToClear($request);
 
-        if ($legacyDomain === null) {
+        if ($domains === []) {
             return $response;
         }
 
         $path = (string) config('session.path', '/');
+        $sessionCookie = (string) config('session.cookie');
 
-        $response->headers->setCookie(cookie()->forget(config('session.cookie'), $path, $legacyDomain));
-        $response->headers->setCookie(cookie()->forget('XSRF-TOKEN', $path, $legacyDomain));
+        foreach ($domains as $domain) {
+            $response->headers->setCookie(cookie()->forget($sessionCookie, $path, $domain));
+            $response->headers->setCookie(cookie()->forget('XSRF-TOKEN', $path, $domain));
+        }
 
         return $response;
     }
 
-    private function legacyDomain(Request $request): ?string
+    private function domainsToClear(Request $request): array
     {
         if (config('session.domain') !== null) {
-            return null;
+            return [];
         }
 
         $host = $request->getHost();
 
         if ($host === '' || ! str_contains($host, '.')) {
-            return null;
+            return [null];
         }
 
-        return $host;
+        $domains = [null, $host];
+        $segments = explode('.', $host);
+
+        while (count($segments) > 2) {
+            array_shift($segments);
+            $domains[] = implode('.', $segments);
+        }
+
+        return array_values(array_unique($domains));
     }
 }
