@@ -14,6 +14,8 @@ interface MagazineFlipbookProps {
     onClose: () => void;
 }
 
+const shouldUseBrowserViewer = import.meta.env.PROD;
+
 // Individual page component (must use forwardRef for react-pageflip)
 const Page = forwardRef<HTMLDivElement, { pageImage: string; pageNumber: number }>(
     ({ pageImage, pageNumber }, ref) => (
@@ -34,6 +36,7 @@ function MagazineFlipbook({ pdfUrl, title, onClose }: MagazineFlipbookProps) {
     const [loading, setLoading] = useState(true);
     const [loadProgress, setLoadProgress] = useState(0);
     const [error, setError] = useState<string | null>(null);
+    const [showBrowserFallback, setShowBrowserFallback] = useState(shouldUseBrowserViewer);
     const [currentPage, setCurrentPage] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
     const bookRef = useRef<any>(null);
@@ -82,6 +85,12 @@ function MagazineFlipbook({ pdfUrl, title, onClose }: MagazineFlipbookProps) {
 
     // Load PDF and render pages to images
     useEffect(() => {
+        if (showBrowserFallback) {
+            setLoading(false);
+            setError(null);
+            return;
+        }
+
         let cancelled = false;
 
         async function loadPdf() {
@@ -129,6 +138,7 @@ function MagazineFlipbook({ pdfUrl, title, onClose }: MagazineFlipbookProps) {
                 if (!cancelled) {
                     console.error('Failed to load PDF:', err);
                     setError('Failed to load magazine. Please try again.');
+                    setShowBrowserFallback(true);
                     setLoading(false);
                 }
             }
@@ -136,7 +146,7 @@ function MagazineFlipbook({ pdfUrl, title, onClose }: MagazineFlipbookProps) {
 
         loadPdf();
         return () => { cancelled = true; };
-    }, [pdfUrl]);
+    }, [pdfUrl, showBrowserFallback]);
 
     const handleFlip = useCallback((e: any) => {
         setCurrentPage(e.data);
@@ -176,6 +186,37 @@ function MagazineFlipbook({ pdfUrl, title, onClose }: MagazineFlipbookProps) {
         return `${left}-${right} / ${totalPages}`;
     }, [currentPage, totalPages, isPortrait]);
 
+    if (showBrowserFallback) {
+        return (
+            <div className="flex flex-col items-center justify-center h-full w-full gap-3">
+                <div className="w-full h-full min-h-[75vh] rounded-xl overflow-hidden border border-white/10 bg-white shadow-2xl">
+                    <iframe
+                        src={`${pdfUrl}#toolbar=1&navpanes=0&scrollbar=1`}
+                        title={title}
+                        className="w-full h-full min-h-[75vh]"
+                    />
+                </div>
+
+                <div className="flex items-center gap-3">
+                    <a
+                        href={pdfUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-white rounded-lg text-sm transition-colors"
+                    >
+                        Open PDF in new tab
+                    </a>
+                    <button
+                        onClick={onClose}
+                        className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg text-sm transition-colors"
+                    >
+                        Close
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
     // ── Loading state ──
     if (loading) {
         return (
@@ -197,14 +238,25 @@ function MagazineFlipbook({ pdfUrl, title, onClose }: MagazineFlipbookProps) {
     // ── Error state ──
     if (error) {
         return (
-            <div className="flex flex-col items-center justify-center gap-4 h-full min-h-[300px]">
+            <div className="flex flex-col items-center justify-center gap-4 h-full min-h-[300px] w-full">
                 <p className="text-red-400">{error}</p>
-                <button
-                    onClick={onClose}
-                    className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg text-sm transition-colors"
-                >
-                    Close
-                </button>
+
+                <div className="flex items-center gap-3">
+                    <a
+                        href={pdfUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-white rounded-lg text-sm transition-colors"
+                    >
+                        Open PDF directly
+                    </a>
+                    <button
+                        onClick={onClose}
+                        className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg text-sm transition-colors"
+                    >
+                        Close
+                    </button>
+                </div>
             </div>
         );
     }
