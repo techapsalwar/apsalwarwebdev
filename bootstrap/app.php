@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\ClearLegacyCookieDomain;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\CheckPermission;
@@ -24,6 +25,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->trustProxies(at: '*');
         
         $middleware->web(append: [
+            ClearLegacyCookieDomain::class,
             HandleAppearance::class,
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
