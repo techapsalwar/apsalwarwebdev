@@ -17,6 +17,11 @@ interface LoginProps {
     canRegister: boolean;
 }
 
+const csrfToken = () =>
+    document
+        .querySelector('meta[name="csrf-token"]')
+        ?.getAttribute('content') ?? '';
+
 export default function Login({
     status,
     canResetPassword,
@@ -31,6 +36,10 @@ export default function Login({
 
             <Form
                 {...store.form()}
+                transform={(data) => ({
+                    ...data,
+                    _token: csrfToken(),
+                })}
                 resetOnSuccess={['password']}
                 className="flex flex-col gap-6"
             >
