@@ -1,12 +1,12 @@
 import { forwardRef, useRef, useState, useEffect, useCallback, memo, useMemo } from 'react';
 import HTMLFlipBook from 'react-pageflip';
 import * as pdfjsLib from 'pdfjs-dist';
+import PdfJsWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?worker';
 
-// Configure PDF.js worker
-pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-    'pdfjs-dist/build/pdf.worker.min.mjs',
-    import.meta.url
-).toString();
+// Let Vite emit a proper worker asset instead of relying on IIS to serve a raw .mjs path.
+if (typeof window !== 'undefined' && 'Worker' in window) {
+    pdfjsLib.GlobalWorkerOptions.workerPort = new PdfJsWorker();
+}
 
 interface MagazineFlipbookProps {
     pdfUrl: string;
@@ -14,7 +14,7 @@ interface MagazineFlipbookProps {
     onClose: () => void;
 }
 
-const shouldUseBrowserViewer = import.meta.env.PROD;
+const shouldUseBrowserViewer = false;
 
 // Individual page component (must use forwardRef for react-pageflip)
 const Page = forwardRef<HTMLDivElement, { pageImage: string; pageNumber: number }>(
