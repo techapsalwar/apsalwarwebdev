@@ -117,6 +117,7 @@ Route::prefix('student-life')->group(function () {
 
 // E-Magazines
 Route::get('/e-magazines', [EmagazineController::class, 'index'])->name('e-magazines.index');
+Route::get('/e-magazines/{magazine:slug}/pdf', [EmagazineController::class, 'pdf'])->name('e-magazines.pdf');
 Route::get('/e-magazines/{magazine:slug}', [EmagazineController::class, 'show'])->name('e-magazines.show');
 
 // Alumni Pages

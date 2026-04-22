@@ -71,7 +71,7 @@ class Magazine extends Model
 
     public function getPdfUrlAttribute(): string
     {
-        return asset('storage/' . $this->pdf_path);
+        return route('e-magazines.pdf', $this);
     }
 
     public function getCoverUrlAttribute(): ?string
