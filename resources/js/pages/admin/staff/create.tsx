@@ -196,14 +196,14 @@ export default function StaffCreate({ departments, types }: StaffCreateProps) {
                                     <div className="space-y-2">
                                         <Label htmlFor="department_id">Department</Label>
                                         <Select 
-                                            value={data.department_id} 
-                                            onValueChange={(v) => setData('department_id', v)}
+                                            value={data.department_id || 'none'} 
+                                            onValueChange={(v) => setData('department_id', v === 'none' ? '' : v)}
                                         >
                                             <SelectTrigger>
                                                 <SelectValue placeholder="Select department" />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                <SelectItem value="">No Department</SelectItem>
+                                                <SelectItem value="none">No Department</SelectItem>
                                                 {departments.map((dept) => (
                                                     <SelectItem key={dept.id} value={dept.id.toString()}>
                                                         {dept.name}
